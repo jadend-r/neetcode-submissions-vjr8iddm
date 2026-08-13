@@ -1,31 +1,30 @@
 class Solution:
     def exist(self, board: List[List[str]], word: str) -> bool:
-        rows, cols = len(board), len(board[0])
-        visited = set()
-
-        def backtrack(r, c, i):
-            if i == len(word):
-                return True
-
-            if (
-                r not in range(rows) or
-                c not in range(cols) or
-                word[i] != board[r][c] or
-                (r, c) in visited
-            ):
-                return False
+        #brute force: try every cell as a starting point
+            #dfs in every direction trying to find the complete word
+            #O(3^(m*n) * n) time / O(m*n) space
+        directions = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+        ROWS, COLS = len(board), len(board[0])
+        def dfs(r, c, curr, visited):
             visited.add((r, c))
-            res = (
-                backtrack(r + 1, c, i + 1) or 
-                backtrack(r - 1, c, i + 1) or 
-                backtrack(r, c + 1, i + 1) or 
-                backtrack(r, c - 1, i + 1) 
-            )
+            curr.append(board[r][c])
+            if "".join(curr) == word:
+                return True
+            for dr, dc in directions:
+                nr, nc = dr + r, dc + c
+                #if neighbor in bounds and not visited, try searching down that path
+                if (
+                    nr >= 0 and nr < ROWS and
+                    nc >= 0 and nc < COLS and
+                    (nr, nc) not in visited
+                ):
+                    if dfs(nr, nc, curr, visited):
+                        return True
+            curr.pop()
             visited.remove((r, c))
-            return res
-            
-        for r in range(rows):
-            for c in range(cols):
-                if backtrack(r, c, 0):
+            return False
+        for r in range(ROWS):
+            for c in range(COLS):
+                if dfs(r, c, [], set()):
                     return True
         return False
